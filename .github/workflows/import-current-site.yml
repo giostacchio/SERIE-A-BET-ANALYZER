@@ -1,0 +1,24 @@
+name: Import current Serie A Bet Analyzer
+
+on:
+  push:
+    paths:
+      - '.github/workflows/import-current-site.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download current published app
+        run: curl -L --fail --retry 3 https://serie-a-bet-analyzer.giorgioanastasi76.chatgpt.site/ -o index.html
+      - name: Commit imported app
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Import current Serie A Bet Analyzer"
+          git push
