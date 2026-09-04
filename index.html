@@ -1,117 +1,104 @@
 <!doctype html>
 <html lang="it">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
-<title>Serie A Bet Analyzer</title>
-<style>
-:root{--bg:#08111f;--panel:#111c2e;--line:#263953;--text:#edf4ff;--muted:#9eb0c9;--acc:#38bdf8;--good:#22c55e;--warn:#f59e0b;--bad:#ef4444}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#07111f,#0b1626);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-.wrap{max-width:1100px;margin:auto;padding:16px}.hero{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0 4px}
-h1{font-size:1.55rem;margin:0}.sub{color:var(--muted);font-size:.92rem;margin-top:4px}.card{background:rgba(17,28,46,.96);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0}
-.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.span4{grid-column:span 4}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:span 12}
-label{display:block;font-size:.78rem;color:var(--muted);font-weight:700;margin-bottom:5px}input,select,textarea{width:100%;background:#0b1525;color:#fff;border:1px solid #334a66;border-radius:11px;padding:11px;font:inherit}
-button{border:0;border-radius:11px;padding:12px 14px;font-weight:850;cursor:pointer;background:#25364e;color:white}.primary{background:var(--acc);color:#062033}.good{background:var(--good);color:#04150a}.warn{background:var(--warn);color:#201300}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.pill{display:inline-block;border:1px solid #3a506c;border-radius:999px;padding:4px 8px;font-size:.76rem;color:#c9d7ea}
-.match{border:1px solid #263953;background:#0c1728;border-radius:14px;padding:12px;margin:9px 0}.matchTop{display:flex;justify-content:space-between;gap:10px}.teams{font-weight:900}.meta{font-size:.78rem;color:var(--muted);margin-top:3px}
-.markets{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.market{background:#101f34;border:1px solid #2b405a;border-radius:10px;padding:8px;text-align:center}
-.market b{display:block;font-size:.82rem}.market input{padding:7px;text-align:center;margin-top:5px}
-.pick{border-left:4px solid var(--acc);padding:10px 12px;background:#0c1728;border-radius:10px;margin:8px 0}.pick strong{font-size:.95rem}.score{font-size:1.4rem;font-weight:1000;color:var(--acc)}
-.status{padding:10px 12px;border-radius:11px;background:#0c1728;border:1px solid #2b405a;color:#cfe0f6}.small{font-size:.78rem;color:var(--muted)}
-table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{border-bottom:1px solid #263953;padding:8px;text-align:left}
-@media(max-width:760px){.span4,.span6,.span8{grid-column:span 12}.markets{grid-template-columns:1fr}.hero{align-items:flex-start;flex-direction:column}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07120f">
+  <meta name="description" content="Analizzatore calcistico personale con filtro prudente, quote reali e archivio verificabile.">
+  <title>Football Bet Analyzer V14</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="stylesheet" href="./styles.css">
 </head>
-<body><div class="wrap">
-<div class="hero">
-  <div><h1>⚽ Serie A Bet Analyzer</h1><div class="sub">Calendario automatico via football-data.org · generatore prudente · singole, doppie e multiple</div></div>
-  <span class="pill">Budget tipico 2 €</span>
-</div>
+<body>
+  <noscript>Per usare Football Bet Analyzer devi attivare JavaScript.</noscript>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./"><span class="brand-mark">FB</span><span><strong>Football</strong><small>Bet Analyzer V14</small></span></a>
+      <div class="top-actions"><button id="installBtn" class="ghost compact">Installa</button><button id="updateBtn" class="ghost compact">Aggiorna app</button></div>
+    </header>
 
-<section class="card">
-<h2 style="margin-top:0">1. Connessione dati</h2>
-<div class="grid">
-  <div class="span6"><label>API token football-data.org</label><input id="token" type="password" placeholder="Incolla il token"></div>
-  <div class="span4"><label>Campionato</label><select id="league">
-    <option value="SA">Serie A</option><option value="PL">Premier League</option><option value="PD">Liga</option><option value="FL1">Ligue 1</option><option value="BL1">Bundesliga</option>
-  </select></div>
-  <div class="span2" style="align-self:end"><button class="primary" onclick="loadMatches()">AGGIORNA</button></div>
-</div>
-<div id="status" class="status" style="margin-top:10px">Inserisci il token e premi AGGIORNA. Il token resta solo nel browser di questo dispositivo.</div>
-</section>
+    <section class="status-strip" aria-live="polite">
+      <span id="dataDot" class="data-dot demo"></span>
+      <div><strong id="dataMode">DATI DIMOSTRATIVI</strong><p id="message">Inserisci la chiave gratuita nelle Impostazioni per caricare partite e risultati reali.</p></div>
+    </section>
 
-<section class="card">
-<h2 style="margin-top:0">2. Partite e quote</h2>
-<div class="small">Le partite vengono lette dall'API. Le quote vanno inserite nei campi 1/X/2: il tool usa probabilità implicite corrette del margine del bookmaker. Puoi lasciare vuote le partite che non vuoi analizzare.</div>
-<div id="matches"></div>
-</section>
+    <nav id="leagueNav" class="league-nav" aria-label="Campionato">
+      <button data-league="ALL"><span>🌍</span><strong>Europa 4</strong><small>Tutti</small></button>
+      <button data-league="SA" class="active"><span>🇮🇹</span><strong>Serie A</strong><small>Italia</small></button>
+      <button data-league="PL"><span>🏴</span><strong>Premier</strong><small>Inghilterra</small></button>
+      <button data-league="PD"><span>🇪🇸</span><strong>LaLiga</strong><small>Spagna</small></button>
+      <button data-league="FL1"><span>🇫🇷</span><strong>Ligue 1</strong><small>Francia</small></button>
+    </nav>
 
-<section class="card">
-<h2 style="margin-top:0">3. Generatore prudente</h2>
-<div class="grid">
-<div class="span4"><label>Tipo schedina</label><select id="betType"><option value="single">Singola</option><option value="double">Doppia</option><option value="triple">Multipla 3 eventi</option><option value="five">Multipla fino a 5 eventi</option></select></div>
-<div class="span4"><label>Quota minima evento</label><input id="minOdd" type="number" step=".01" value="1.25"></div>
-<div class="span4"><label>Quota massima evento</label><input id="maxOdd" type="number" step=".01" value="2.10"></div>
-</div>
-<div class="row" style="margin-top:10px"><button class="good" onclick="generate()">GENERA PROPOSTA PRUDENTE</button><button onclick="clearOdds()">AZZERA QUOTE</button></div>
-<div id="proposal" style="margin-top:12px"></div>
-</section>
+    <main>
+      <section id="view-analysis" class="view active">
+        <div class="page-head"><div><p class="eyebrow">PROSSIMO TURNO</p><h1>Partite da analizzare</h1></div><div class="count-badge"><strong id="matchCount">0</strong><span>partite</span></div></div>
+        <div id="summaryCards" class="summary-grid"></div>
+        <div id="matchGrid" class="match-grid"></div>
+        <section id="analysisPanel" class="panel analysis-panel"></section>
+      </section>
 
-<section class="card">
-<h2 style="margin-top:0">Come ragiona</h2>
-<div class="small">Il punteggio privilegia esiti con probabilità implicita più alta, quote non estreme e combinazioni con quota totale contenuta. Non è una previsione certa: le quote riflettono già aspettative e margine del bookmaker. Usa il tool come filtro organizzativo, non come garanzia di profitto.</div>
-</section>
-</div>
-<script>
-const K='seriea_bet_v1';
-let state={matches:[],odds:{},token:'',league:'SA'};
-function save(){state.token=document.getElementById('token').value.trim();state.league=document.getElementById('league').value;localStorage.setItem(K,JSON.stringify(state))}
-function restore(){try{state={...state,...JSON.parse(localStorage.getItem(K)||'{}')}}catch(e){};token.value=state.token||'';league.value=state.league||'SA';renderMatches()}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function fmtDate(x){try{return new Date(x).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}catch{return x}}
-async function loadMatches(){
- save(); if(!state.token){status.textContent='⚠️ Inserisci prima il token football-data.org.';return}
- status.textContent='Caricamento partite…';
- try{
-   const r=await fetch('https://api.football-data.org/v4/competitions/'+state.league+'/matches?status=SCHEDULED',{headers:{'X-Auth-Token':state.token}});
-   if(!r.ok)throw new Error('HTTP '+r.status);
-   const j=await r.json();
-   state.matches=(j.matches||[]).slice(0,20).map(m=>({id:m.id,utcDate:m.utcDate,home:m.homeTeam?.name||'Casa',away:m.awayTeam?.name||'Ospite'}));
-   save(); renderMatches(); status.textContent='✅ '+state.matches.length+' partite caricate.';
- }catch(e){status.textContent='❌ Errore API: '+e.message+'. Controlla token, piano API o connessione.'}
-}
-function renderMatches(){
- if(!state.matches?.length){matches.innerHTML='<div class="status">Nessuna partita caricata.</div>';return}
- matches.innerHTML=state.matches.map(m=>{
-   const o=state.odds[m.id]||{};
-   return `<div class="match"><div class="matchTop"><div><div class="teams">${esc(m.home)} — ${esc(m.away)}</div><div class="meta">${fmtDate(m.utcDate)}</div></div><span class="pill">${state.league}</span></div>
-   <div class="markets">${['1','X','2'].map(k=>`<div class="market"><b>${k}</b><input inputmode="decimal" type="number" min="1.01" step=".01" value="${o[k]||''}" onchange="setOdd('${m.id}','${k}',this.value)" placeholder="quota"></div>`).join('')}</div></div>`
- }).join('')
-}
-function setOdd(id,k,v){state.odds[id]=state.odds[id]||{};state.odds[id][k]=parseFloat(v)||'';save()}
-function clearOdds(){state.odds={};save();renderMatches();proposal.innerHTML=''}
-function normalizedProbs(o){
- let inv=['1','X','2'].map(k=>o[k]>1?1/o[k]:0),s=inv.reduce((a,b)=>a+b,0);if(!s)return null;
- return {p:{'1':inv[0]/s,'X':inv[1]/s,'2':inv[2]/s},margin:s-1}
-}
-function generate(){
- let min=parseFloat(minOdd.value)||1.2,max=parseFloat(maxOdd.value)||2.2,choices=[];
- for(const m of state.matches){
-  const o=state.odds[m.id]||{},pr=normalizedProbs(o);if(!pr)continue;
-  for(const k of ['1','X','2']){const odd=+o[k];if(!(odd>=min&&odd<=max))continue;
-   const p=pr.p[k],center=Math.max(0,1-Math.abs(odd-1.55)/1.2),score=p*.72+center*.18-Math.max(0,pr.margin)*.10;
-   choices.push({m,k,odd,p,score});
-  }
- }
- choices.sort((a,b)=>b.score-a.score);
- let n={single:1,double:2,triple:3,five:5}[betType.value]||1,out=[],used=new Set();
- for(const c of choices){if(used.has(c.m.id))continue;out.push(c);used.add(c.m.id);if(out.length>=n)break}
- if(!out.length){proposal.innerHTML='<div class="status">Nessun evento compatibile: inserisci quote reali e/o amplia l’intervallo.</div>';return}
- let total=out.reduce((a,c)=>a*c.odd,1),prob=out.reduce((a,c)=>a*c.p,1);
- proposal.innerHTML=`<div class="status"><div class="score">Quota combinata ${total.toFixed(2)}</div><div class="small">Probabilità implicita combinata ≈ ${(prob*100).toFixed(1)}%</div></div>`+
- out.map(c=>`<div class="pick"><strong>${esc(c.m.home)} — ${esc(c.m.away)}</strong><br>Esito <b>${c.k}</b> · quota <b>${c.odd.toFixed(2)}</b> · probabilità normalizzata ${(c.p*100).toFixed(1)}%</div>`).join('');
-}
-restore();
-</script>
-</body></html>
+      <section id="view-slip" class="view">
+        <div class="page-head"><div><p class="eyebrow">CAPITALE BASSO</p><h1>Selettore e schedina</h1></div><span id="slipCount" class="pill">0 selezioni</span></div>
+        <div class="two-columns">
+          <section class="panel">
+            <div class="panel-title"><div><h2>Selettore rigoroso</h2><p>Propone una singola soltanto quando tutti i controlli sono superati.</p></div><span class="safe-badge">MAX €2</span></div>
+            <div class="check-list"><span><b>1</b> Almeno 40 verifiche storiche</span><span><b>2</b> Affidabilità dati almeno 70%</span><span><b>3</b> Quota reale e margine 2,5–15%</span></div>
+            <button id="generateBtn" class="primary wide">Cerca una singola valida</button>
+            <div id="generatedBox" class="generated-box"></div>
+          </section>
+          <section class="panel">
+            <h2>Giocata da registrare</h2>
+            <div id="slipBox"></div>
+            <div class="stake-box">
+              <label>Puntata<input id="stakeInput" type="number" min="0.5" max="2" step="0.5" value="1"></label>
+              <div><span>Quota totale</span><strong id="slipOdds">–</strong></div>
+              <div><span>Ritorno potenziale</span><strong id="potentialReturn">–</strong></div>
+            </div>
+            <div class="budget-progress"><div><span>Budget del mese</span><strong id="monthlyBudgetLabel">€ 0 / € 50</strong></div><i><b id="budgetBar"></b></i><small id="budgetHelp">Disponibile € 50</small></div>
+            <button id="archiveBtn" class="primary wide">Salva giocata reale</button>
+          </section>
+        </div>
+      </section>
+
+      <section id="view-archive" class="view">
+        <div class="page-head"><div><p class="eyebrow">RISULTATI REALI</p><h1>Archivio giocate</h1></div><button id="exportBtn" class="ghost">Esporta CSV</button></div>
+        <div id="statGrid" class="stat-grid"></div><div id="verdict" class="verdict"></div><div id="archiveList" class="archive-list"></div>
+      </section>
+
+      <section id="view-settings" class="view">
+        <div class="page-head"><div><p class="eyebrow">CONFIGURAZIONE</p><h1>Dati, quote e limiti</h1></div></div>
+        <div class="settings-grid">
+          <section class="panel">
+            <div class="setting-icon">↻</div><h2>Partite e risultati</h2><p>La chiave football-data.org resta nel browser e viene inviata direttamente al fornitore.</p>
+            <label>API token football-data.org<input id="footballToken" type="password" autocomplete="off" placeholder="Incolla X-Auth-Token"></label>
+            <div class="button-row"><button id="saveFootballTokenBtn" class="primary">Salva</button><button id="syncBtn" class="secondary">Salva e aggiorna</button><button id="removeFootballTokenBtn" class="text-button">Rimuovi</button></div>
+            <a href="https://www.football-data.org/client/register" target="_blank" rel="noreferrer">Crea la chiave gratuita ↗</a>
+          </section>
+          <section class="panel">
+            <div class="setting-icon">%</div><h2>Quote reali facoltative</h2><p>Puoi inserirle a mano nell’analisi. Una chiave TheRundown prova a compilarle automaticamente.</p>
+            <label>API key TheRundown<input id="oddsToken" type="password" autocomplete="off" placeholder="Facoltativa"></label>
+            <div class="button-row"><button id="saveOddsTokenBtn" class="primary">Salva</button><button id="syncOddsBtn" class="secondary">Scarica quote</button><button id="removeOddsTokenBtn" class="text-button">Rimuovi</button></div>
+          </section>
+          <section class="panel">
+            <div class="setting-icon">€</div><h2>Disciplina capitale basso</h2>
+            <label>Budget mensile<input id="bankrollInput" type="number" min="5" step="5" value="50"></label>
+            <label class="toggle-row"><input id="strictInput" type="checkbox" checked><span><strong>Modalità rigorosa</strong><small>Solo singole qualificate; 2% del budget, massimo €2.</small></span></label>
+          </section>
+        </div>
+        <section class="responsible"><strong>Il filtro riduce le giocate, non garantisce profitti.</strong><p>Valuta il metodo solo dopo almeno 30 giocate chiuse e usando anche il CLV. Non rincorrere le perdite. Vietato ai minori di 18 anni.</p></section>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navigazione principale">
+      <button data-view="analysis" class="active"><span>▥</span>Analisi</button>
+      <button data-view="slip"><span>▱</span>Schedina<i id="navSlipBadge"></i></button>
+      <button data-view="archive"><span>◷</span>Archivio</button>
+      <button data-view="settings"><span>⚙</span>Impostazioni</button>
+    </nav>
+  </div>
+  <script src="./app.js" defer></script>
+</body>
+</html>
