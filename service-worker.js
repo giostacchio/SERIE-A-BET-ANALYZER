@@ -1,6 +1,6 @@
-const CACHE = "football-analyzer-v15-20260911b";
+const CACHE = "football-analyzer-v16-20260916a";
 const CORE = [
-  "./", "./index.html", "./styles.css", "./app.js", "./v15-consensus.js", "./v15-ui-fix.js", "./manifest.webmanifest",
+  "./", "./index.html", "./styles.css", "./app.js", "./v16-personal-edge.js", "./v15-ui-fix.js", "./manifest.webmanifest",
   "./icon-192.png", "./icon-512.png", "./icon-maskable-192.png",
   "./icon-maskable-512.png", "./apple-touch-icon.png", "./favicon.ico"
 ];
