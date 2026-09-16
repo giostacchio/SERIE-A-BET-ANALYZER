@@ -75,7 +75,7 @@
         <div class="page-head"><div><p class="eyebrow">CONFIGURAZIONE</p><h1>Dati, quote e limiti</h1></div></div>
         <div class="settings-grid">
           <section class="panel">
-            <div class="setting-icon">↻</div><h2>Partite e risultati</h2><p>La chiave football-data.org resta nel browser. Per Europa League la V16.2 usa automaticamente il calendario UEFA quando l'API non la rende disponibile.</p>
+            <div class="setting-icon">↻</div><h2>Partite e risultati</h2><p>La chiave football-data.org resta nel browser e viene inviata direttamente al fornitore.</p>
             <label>API token football-data.org<input id="footballToken" type="password" autocomplete="off" placeholder="Incolla X-Auth-Token"></label>
             <div class="button-row"><button id="saveFootballTokenBtn" class="primary">Salva</button><button id="syncBtn" class="secondary">Salva e aggiorna</button><button id="removeFootballTokenBtn" class="text-button">Rimuovi</button></div>
             <a href="https://www.football-data.org/client/register" target="_blank" rel="noreferrer">Crea la chiave gratuita ↗</a>
@@ -105,6 +105,7 @@
   <script src="./app.js" defer></script>
   <script src="./v16-personal-edge.js" defer></script>
   <script src="./v15-ui-fix.js" defer></script>
+  <script src="./v162-uefa-reliable.js" defer></script>
   <script src="./v16-europe-all.js" defer></script>
 </body>
 </html>
