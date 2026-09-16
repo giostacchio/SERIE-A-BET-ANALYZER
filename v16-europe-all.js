@@ -9,8 +9,26 @@
 
   const DOMESTIC = ['SA', 'PL', 'PD', 'FL1'];
   const LABELS = {
-    ALL: 'Europa 4', SA: 'Serie A', PL: 'Premier League', PD: 'LaLiga', FL1: 'Ligue 1',
-    CL: 'Champions League', EL: 'Europa League'
+    ALL: 'Campionati 4', SA: 'Serie A', PL: 'Premier League', PD: 'LaLiga', FL1: 'Ligue 1',
+    UEFA: 'Coppe UEFA', CL: 'Champions League', EL: 'Europa League'
+  };
+
+  const UEFA_SOURCES = {
+    EL: [
+      'https://r.jina.ai/https://www.uefa.com/uefaeuropaleague/fixtures-results/',
+      'https://r.jina.ai/https://www.uefa.com/uefaeuropaleague/news/02a8-2174cafa5bb6-82bbc20c9b92-1000--2026-27-europa-league-all-the-league-phase-fixtures/'
+    ],
+    CL: [
+      'https://r.jina.ai/https://www.uefa.com/uefachampionsleague/fixtures-results/',
+      'https://r.jina.ai/https://www.uefa.com/uefachampionsleague/news/02a8-2174c9e9019d-f909a77bd77a-1000--2026-27-champions-league-all-the-league-phase-fixtures/'
+    ]
+  };
+
+  const MONTHS = {
+    january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+    july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+    gennaio: 0, febbraio: 1, marzo: 2, aprile: 3, maggio: 4, giugno: 5,
+    luglio: 6, agosto: 7, settembre: 8, ottobre: 9, novembre: 10, dicembre: 11
   };
 
   const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -18,12 +36,22 @@
     const target = document.getElementById('message');
     const dot = document.getElementById('dataDot');
     if (target) target.textContent = text;
-    if (dot && error) dot.classList.add('error');
+    if (dot) dot.classList.toggle('error', Boolean(error));
   };
 
   function currentSeason() {
     const now = new Date();
     return now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+  }
+
+  function hashText(value) {
+    let hash = 2166136261;
+    const text = String(value || '');
+    for (let i = 0; i < text.length; i += 1) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
   }
 
   function normalizeMatch(raw, code) {
@@ -82,6 +110,23 @@
     throw lastError || new Error('connessione API non riuscita');
   }
 
+  async function fetchText(url) {
+    let lastError = null;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const response = await fetch(url, { cache: 'no-store' });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const text = await response.text();
+        if (text && text.length > 300) return text;
+        throw new Error('risposta UEFA vuota');
+      } catch (error) {
+        lastError = error;
+        if (attempt === 0) await wait(700);
+      }
+    }
+    throw lastError || new Error('calendario UEFA non raggiungibile');
+  }
+
   function nextRound(matches) {
     const cutoff = Date.now() + 5 * 60 * 1000;
     const future = matches
@@ -96,7 +141,7 @@
     }
 
     const end = Date.parse(first.utcDate) + 4 * 86400000;
-    return future.filter((m) => Date.parse(m.utcDate) <= end).slice(0, 24);
+    return future.filter((m) => Date.parse(m.utcDate) <= end).slice(0, 40);
   }
 
   async function loadCompetition(code, token, season) {
@@ -118,6 +163,7 @@
     const all = Array.from(byId.values());
     return {
       code,
+      source: 'football-data.org',
       upcoming: nextRound(all),
       history: all
         .filter((m) => m.status === 'FINISHED' && m.homeScore != null && m.awayScore != null)
@@ -126,12 +172,135 @@
     };
   }
 
+  function cleanLine(value) {
+    return String(value || '')
+      .replace(/\u00a0/g, ' ')
+      .replace(/^[-*]\s*/, '')
+      .replace(/\*\*/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function parseDateHeading(line) {
+    const english = line.match(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/i);
+    if (english) {
+      const month = MONTHS[english[3].toLowerCase()];
+      if (month != null) return { day: Number(english[2]), month, year: Number(english[4]) };
+    }
+    const italian = line.match(/^(Lunedì|Martedì|Mercoledì|Giovedì|Venerdì|Sabato|Domenica)\s+(\d{1,2})\s+([A-Za-zàèéìòù]+)\s+(\d{4})$/i);
+    if (italian) {
+      const month = MONTHS[italian[3].toLowerCase()];
+      if (month != null) return { day: Number(italian[2]), month, year: Number(italian[4]) };
+    }
+    return null;
+  }
+
+  function localIso(dateParts, timeText) {
+    const parts = String(timeText || '21:00').split(':').map(Number);
+    const date = new Date(dateParts.year, dateParts.month, dateParts.day, parts[0] || 21, parts[1] || 0, 0, 0);
+    return date.toISOString();
+  }
+
+  function parseUefaFixtures(text, code) {
+    const lines = String(text || '').split('\n').map(cleanLine).filter(Boolean);
+    const fixtures = [];
+    let matchday = 0;
+    let activeDate = null;
+
+    for (const line of lines) {
+      const md = line.match(/^#{0,3}\s*(?:Matchday|Giornata)\s*(\d+)/i);
+      if (md) {
+        matchday = Number(md[1]);
+        activeDate = null;
+        continue;
+      }
+
+      const dateHeading = parseDateHeading(line.replace(/^#+\s*/, ''));
+      if (dateHeading) {
+        activeDate = dateHeading;
+        continue;
+      }
+      if (!activeDate || !matchday) continue;
+
+      const noScore = line.replace(/\s+\d+[-–]\d+(?:\s.*)?$/, '').trim();
+      const match = noScore.match(/^(.+?)\s+(?:vs|[-–])\s+(.+?)(?:\s+\((\d{1,2}:\d{2})(?:\s*CET)?\))?$/i);
+      if (!match) continue;
+
+      const home = cleanLine(match[1]);
+      const away = cleanLine(match[2]);
+      if (!home || !away || /fixtures|results|calendar|calendario/i.test(home + ' ' + away)) continue;
+      const time = match[3] || '21:00';
+      const utcDate = localIso(activeDate, time);
+      const id = 'uefa-' + code.toLowerCase() + '-' + hashText(code + '|' + utcDate.slice(0, 10) + '|' + home + '|' + away);
+      fixtures.push({
+        id,
+        utcDate,
+        matchday,
+        status: 'SCHEDULED',
+        competitionCode: code,
+        homeTeam: { id: hashText('team|' + home), name: home, shortName: home },
+        awayTeam: { id: hashText('team|' + away), name: away, shortName: away },
+        homeScore: null,
+        awayScore: null
+      });
+    }
+
+    const unique = new Map();
+    fixtures.forEach((m) => unique.set(m.id, m));
+    return Array.from(unique.values()).sort((a, b) => Date.parse(a.utcDate) - Date.parse(b.utcDate));
+  }
+
+  function selectCurrentUefaMatchday(fixtures) {
+    if (!fixtures.length) return [];
+    const now = Date.now();
+    const groups = new Map();
+    fixtures.forEach((match) => {
+      if (!groups.has(match.matchday)) groups.set(match.matchday, []);
+      groups.get(match.matchday).push(match);
+    });
+    const matchdays = Array.from(groups.keys()).sort((a, b) => a - b);
+    for (const day of matchdays) {
+      const rows = groups.get(day).sort((a, b) => Date.parse(a.utcDate) - Date.parse(b.utcDate));
+      const latest = Math.max.apply(null, rows.map((m) => Date.parse(m.utcDate)));
+      if (latest >= now - 6 * 60 * 60 * 1000) return rows;
+    }
+    return groups.get(matchdays[matchdays.length - 1]) || [];
+  }
+
+  async function loadUefaCalendar(code) {
+    const sources = UEFA_SOURCES[code] || [];
+    const errors = [];
+    for (const url of sources) {
+      try {
+        const text = await fetchText(url);
+        const parsed = parseUefaFixtures(text, code);
+        const upcoming = selectCurrentUefaMatchday(parsed);
+        if (upcoming.length) {
+          return { code, source: 'UEFA', upcoming, history: [] };
+        }
+        errors.push('nessuna partita letta');
+      } catch (error) {
+        errors.push(String(error && error.message || 'errore'));
+      }
+    }
+    throw new Error('UEFA: ' + errors.join(' / '));
+  }
+
+  async function loadEuropean(code, token, season) {
+    try {
+      const api = await loadCompetition(code, token, season);
+      if (api.upcoming.length) return api;
+    } catch (_error) {
+    }
+    return loadUefaCalendar(code);
+  }
+
   function saveSnapshot(target, loaded, failures) {
     const upcoming = loaded.flatMap((row) => row.upcoming).sort((a, b) => Date.parse(a.utcDate) - Date.parse(b.utcDate));
     const history = loaded.flatMap((row) => row.history).sort((a, b) => Date.parse(a.utcDate) - Date.parse(b.utcDate));
     if (!upcoming.length) throw new Error('nessuna prossima partita disponibile');
 
-    const special = target === 'CL' || target === 'EL' ? target : '';
+    const special = ['UEFA', 'CL', 'EL'].includes(target) ? target : '';
     localStorage.setItem(SPECIAL_KEY, special);
     localStorage.setItem(COMP_KEY, special ? 'ALL' : target);
     localStorage.setItem(SNAPSHOT_KEY, JSON.stringify({
@@ -142,7 +311,11 @@
       isDemo: false
     }));
 
-    let status = LABELS[target] + ': ' + upcoming.length + ' partite del prossimo turno caricate.';
+    const sources = Array.from(new Set(loaded.map((row) => row.source))).join(' + ');
+    let status = LABELS[target] + ': ' + upcoming.length + ' partite caricate · fonte ' + sources + '.';
+    if (loaded.some((row) => row.source === 'UEFA' && !row.history.length)) {
+      status += ' Per le partite da calendario UEFA lo storico del torneo può essere limitato: le partite restano comunque tutte visibili.';
+    }
     if (failures.length) status += ' Non caricati: ' + failures.map((row) => LABELS[row.code] + ' (' + row.error + ')').join(', ') + '.';
     localStorage.setItem(STATUS_KEY, status);
   }
@@ -152,26 +325,31 @@
     const draft = tokenField && tokenField.value.trim();
     if (draft) localStorage.setItem(TOKEN_KEY, draft);
     const token = draft || localStorage.getItem(TOKEN_KEY) || '';
-    if (!token) {
-      setMessage('La chiave non è presente: apri Impostazioni e salvala prima.', true);
-      return;
-    }
 
-    const codes = target === 'ALL' ? DOMESTIC : [target];
     const season = currentSeason();
     const loaded = [];
     const failures = [];
+    let codes;
+    if (target === 'ALL') codes = DOMESTIC;
+    else if (target === 'UEFA') codes = ['CL', 'EL'];
+    else codes = [target];
+
+    if (!token && !codes.every((code) => code === 'CL' || code === 'EL')) {
+      setMessage('La chiave non è presente: apri Impostazioni e salvala prima.', true);
+      return;
+    }
 
     setMessage('Aggiorno ' + LABELS[target] + '…');
     for (let index = 0; index < codes.length; index += 1) {
       const code = codes[index];
       setMessage('Aggiorno ' + LABELS[code] + ' (' + (index + 1) + '/' + codes.length + ')…');
       try {
-        loaded.push(await loadCompetition(code, token, season));
+        if (code === 'CL' || code === 'EL') loaded.push(await loadEuropean(code, token, season));
+        else loaded.push(await loadCompetition(code, token, season));
       } catch (error) {
         failures.push({ code, error: String(error && error.message || 'errore') });
       }
-      if (index < codes.length - 1) await wait(650);
+      if (index < codes.length - 1) await wait(500);
     }
 
     if (!loaded.length) {
@@ -190,7 +368,7 @@
 
   function selectedTarget() {
     const special = localStorage.getItem(SPECIAL_KEY) || '';
-    if (special === 'CL' || special === 'EL') return special;
+    if (['UEFA', 'CL', 'EL'].includes(special)) return special;
     const competition = localStorage.getItem(COMP_KEY) || 'SA';
     return ['ALL', 'SA', 'PL', 'PD', 'FL1'].includes(competition) ? competition : 'SA';
   }
@@ -200,9 +378,13 @@
       const decision = card.querySelector('.match-decision strong');
       const badge = card.querySelector('.decision-badge');
       const footer = card.querySelector('.match-footer span:first-child');
+      const meta = card.querySelector('.match-meta span');
       if (decision && decision.textContent.trim() === 'PASSA') decision.textContent = 'ANALISI';
       if (badge && badge.textContent.trim() === 'SCARTATA') badge.textContent = 'DA VALUTARE';
       if (footer && footer.textContent.trim() === 'Nessuna giocata') footer.textContent = 'Apri per vedere tutte le stime';
+      if (meta) {
+        meta.textContent = meta.textContent.replace(/^EL\s*·/, 'Europa League ·').replace(/^CL\s*·/, 'Champions League ·');
+      }
     });
   }
 
@@ -232,6 +414,7 @@
       #leagueNav button[data-euro-league].active{border-color:#2bd982;background:rgba(43,217,130,.10)}
       #leagueNav button[data-euro-league="EL"] small{color:#f4a340}
       #leagueNav button[data-euro-league="CL"] small{color:#6eb5ff}
+      #leagueNav button[data-euro-league="UEFA"] small{color:#c6a8ff}
     `;
     document.head.appendChild(style);
   }
