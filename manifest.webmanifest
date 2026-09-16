@@ -1,7 +1,7 @@
 {
-  "name": "Football Bet Analyzer V14",
+  "name": "Football Bet Analyzer V16",
   "short_name": "Football",
-  "description": "Analizzatore calcistico personale con filtro prudente e archivio verificabile",
+  "description": "Analizzatore calcistico personale: una sola singola, consenso tra modelli, backtest e filtro PASSA",
   "id": "./",
   "start_url": "./",
   "scope": "./",
