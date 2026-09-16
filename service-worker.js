@@ -1,4 +1,4 @@
-const CACHE = "football-analyzer-v16-1-20260916";
+const CACHE = "football-analyzer-v16-2-20260916";
 const CORE = [
   "./", "./index.html", "./styles.css", "./app.js", "./v16-personal-edge.js", "./v15-ui-fix.js", "./v16-europe-all.js", "./manifest.webmanifest",
   "./icon-192.png", "./icon-512.png", "./icon-maskable-192.png",
