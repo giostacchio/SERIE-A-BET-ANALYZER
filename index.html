@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07120f">
-  <meta name="description" content="Football Bet Analyzer V16 per uso personale: una sola singola, consenso tra modelli, backtest, stabilità recente, quota reale e filtro PASSA.">
-  <title>Football Bet Analyzer V16</title>
+  <meta name="description" content="Football Bet Analyzer V16.1 per uso personale: mostra tutte le partite del prossimo turno, analisi completa, caricamento Europa robusto e selettore singola separato.">
+  <title>Football Bet Analyzer V16.1</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -15,7 +15,7 @@
   <noscript>Per usare Football Bet Analyzer devi attivare JavaScript.</noscript>
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="./"><span class="brand-mark">FB</span><span><strong>Football</strong><small>Bet Analyzer V16</small></span></a>
+      <a class="brand" href="./"><span class="brand-mark">FB</span><span><strong>Football</strong><small>Bet Analyzer V16.1</small></span></a>
       <div class="top-actions"><button id="installBtn" class="ghost compact">Installa</button><button id="updateBtn" class="ghost compact">Aggiorna app</button></div>
     </header>
 
@@ -25,16 +25,18 @@
     </section>
 
     <nav id="leagueNav" class="league-nav" aria-label="Campionato">
-      <button data-league="ALL"><span>🌍</span><strong>Europa 4</strong><small>Tutti</small></button>
+      <button data-league="ALL"><span>🌍</span><strong>Europa 4</strong><small>Tutti i prossimi turni</small></button>
       <button data-league="SA" class="active"><span>🇮🇹</span><strong>Serie A</strong><small>Italia</small></button>
       <button data-league="PL"><span>🏴</span><strong>Premier</strong><small>Inghilterra</small></button>
       <button data-league="PD"><span>🇪🇸</span><strong>LaLiga</strong><small>Spagna</small></button>
       <button data-league="FL1"><span>🇫🇷</span><strong>Ligue 1</strong><small>Francia</small></button>
+      <button data-euro-league="CL"><span>🏆</span><strong>Champions</strong><small>UEFA</small></button>
+      <button data-euro-league="EL"><span>🟠</span><strong>Europa L.</strong><small>UEFA · se inclusa nella chiave</small></button>
     </nav>
 
     <main>
       <section id="view-analysis" class="view active">
-        <div class="page-head"><div><p class="eyebrow">PROSSIMO TURNO</p><h1>Partite da analizzare</h1></div><div class="count-badge"><strong id="matchCount">0</strong><span>partite</span></div></div>
+        <div class="page-head"><div><p class="eyebrow">TUTTE LE PARTITE · PROSSIMO TURNO</p><h1>Partite da analizzare</h1></div><div class="count-badge"><strong id="matchCount">0</strong><span>partite</span></div></div>
         <div id="summaryCards" class="summary-grid"></div>
         <div id="matchGrid" class="match-grid"></div>
         <section id="analysisPanel" class="panel analysis-panel"></section>
@@ -44,7 +46,7 @@
         <div class="page-head"><div><p class="eyebrow">USO PERSONALE · UNA SOLA DECISIONE</p><h1>Selettore e schedina</h1></div><span id="slipCount" class="pill">0 selezioni</span></div>
         <div class="two-columns">
           <section class="panel">
-            <div class="panel-title"><div><h2>Selettore V16</h2><p>Restituisce una sola singola oppure PASSA. Nessuna multipla automatica.</p></div><span class="safe-badge">MAX €2</span></div>
+            <div class="panel-title"><div><h2>Selettore V16</h2><p>Le partite vengono mostrate tutte. Qui viene evidenziata soltanto la singola che supera i controlli più rigidi.</p></div><span class="safe-badge">MAX €2</span></div>
             <div class="check-list"><span><b>1</b> Campione squadra almeno 9 gare utili</span><span><b>2</b> Consenso modelli: scarto massimo 7,5 punti</span><span><b>3</b> Backtest almeno 30 casi e calibrazione stabile</span><span><b>4</b> Quota reale 1,20–1,90 e margine 3,5–12%</span></div>
             <button id="generateBtn" class="primary wide">Cerca la migliore singola</button>
             <div id="generatedBox" class="generated-box"></div>
@@ -88,7 +90,7 @@
             <label class="toggle-row"><input id="strictInput" type="checkbox" checked><span><strong>Modalità rigorosa</strong><small>Una singola qualificata; 2% del budget, massimo €2.</small></span></label>
           </section>
         </div>
-        <section class="responsible"><strong>La V16 deve poter dire PASSA.</strong><p>Il risultato va valutato sull’archivio reale, non su una singola giornata. Non aumentare la puntata per recuperare una perdita.</p></section>
+        <section class="responsible"><strong>Tutte le partite restano visibili.</strong><p>Il filtro serve soltanto a distinguere le analisi più solide; non elimina più le partite dalla schermata. Non aumentare la puntata per recuperare una perdita.</p></section>
       </section>
     </main>
 
@@ -102,5 +104,6 @@
   <script src="./app.js" defer></script>
   <script src="./v16-personal-edge.js" defer></script>
   <script src="./v15-ui-fix.js" defer></script>
+  <script src="./v16-europe-all.js" defer></script>
 </body>
 </html>
