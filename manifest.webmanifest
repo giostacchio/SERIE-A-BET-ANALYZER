@@ -1,7 +1,7 @@
 {
-  "name": "Football Bet Analyzer V16",
+  "name": "Football Bet Analyzer V16.1",
   "short_name": "Football",
-  "description": "Analizzatore calcistico personale: una sola singola, consenso tra modelli, backtest e filtro PASSA",
+  "description": "Analizzatore calcistico personale: tutte le partite del prossimo turno, caricamento Europa robusto e selettore singola separato",
   "id": "./",
   "start_url": "./",
   "scope": "./",
