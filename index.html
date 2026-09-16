@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07120f">
-  <meta name="description" content="Analizzatore calcistico personale con filtro prudente, quote reali, consenso a doppio modello e archivio verificabile.">
-  <title>Football Bet Analyzer V15</title>
+  <meta name="description" content="Football Bet Analyzer V16 per uso personale: una sola singola, consenso tra modelli, backtest, stabilità recente, quota reale e filtro PASSA.">
+  <title>Football Bet Analyzer V16</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -15,7 +15,7 @@
   <noscript>Per usare Football Bet Analyzer devi attivare JavaScript.</noscript>
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="./"><span class="brand-mark">FB</span><span><strong>Football</strong><small>Bet Analyzer V15</small></span></a>
+      <a class="brand" href="./"><span class="brand-mark">FB</span><span><strong>Football</strong><small>Bet Analyzer V16</small></span></a>
       <div class="top-actions"><button id="installBtn" class="ghost compact">Installa</button><button id="updateBtn" class="ghost compact">Aggiorna app</button></div>
     </header>
 
@@ -41,12 +41,12 @@
       </section>
 
       <section id="view-slip" class="view">
-        <div class="page-head"><div><p class="eyebrow">CAPITALE BASSO</p><h1>Selettore e schedina</h1></div><span id="slipCount" class="pill">0 selezioni</span></div>
+        <div class="page-head"><div><p class="eyebrow">USO PERSONALE · UNA SOLA DECISIONE</p><h1>Selettore e schedina</h1></div><span id="slipCount" class="pill">0 selezioni</span></div>
         <div class="two-columns">
           <section class="panel">
-            <div class="panel-title"><div><h2>Selettore rigoroso</h2><p>Propone una singola soltanto quando tutti i controlli sono superati.</p></div><span class="safe-badge">MAX €2</span></div>
-            <div class="check-list"><span><b>1</b> Almeno 40 verifiche storiche</span><span><b>2</b> Affidabilità dati almeno 70%</span><span><b>3</b> Quota reale e margine 2,5–15%</span></div>
-            <button id="generateBtn" class="primary wide">Cerca una singola valida</button>
+            <div class="panel-title"><div><h2>Selettore V16</h2><p>Restituisce una sola singola oppure PASSA. Nessuna multipla automatica.</p></div><span class="safe-badge">MAX €2</span></div>
+            <div class="check-list"><span><b>1</b> Campione squadra almeno 9 gare utili</span><span><b>2</b> Consenso modelli: scarto massimo 7,5 punti</span><span><b>3</b> Backtest almeno 30 casi e calibrazione stabile</span><span><b>4</b> Quota reale 1,20–1,90 e margine 3,5–12%</span></div>
+            <button id="generateBtn" class="primary wide">Cerca la migliore singola</button>
             <div id="generatedBox" class="generated-box"></div>
           </section>
           <section class="panel">
@@ -78,17 +78,17 @@
             <a href="https://www.football-data.org/client/register" target="_blank" rel="noreferrer">Crea la chiave gratuita ↗</a>
           </section>
           <section class="panel">
-            <div class="setting-icon">%</div><h2>Quote reali facoltative</h2><p>Puoi inserirle a mano nell’analisi. Una chiave TheRundown prova a compilarle automaticamente.</p>
+            <div class="setting-icon">%</div><h2>Quote reali</h2><p>La V16 richiede una quota reale per qualificare una giocata. Puoi inserirla manualmente nell’analisi; TheRundown resta facoltativo.</p>
             <label>API key TheRundown<input id="oddsToken" type="password" autocomplete="off" placeholder="Facoltativa"></label>
             <div class="button-row"><button id="saveOddsTokenBtn" class="primary">Salva</button><button id="syncOddsBtn" class="secondary">Scarica quote</button><button id="removeOddsTokenBtn" class="text-button">Rimuovi</button></div>
           </section>
           <section class="panel">
             <div class="setting-icon">€</div><h2>Disciplina capitale basso</h2>
             <label>Budget mensile<input id="bankrollInput" type="number" min="5" step="5" value="50"></label>
-            <label class="toggle-row"><input id="strictInput" type="checkbox" checked><span><strong>Modalità rigorosa</strong><small>Solo singole qualificate; 2% del budget, massimo €2.</small></span></label>
+            <label class="toggle-row"><input id="strictInput" type="checkbox" checked><span><strong>Modalità rigorosa</strong><small>Una singola qualificata; 2% del budget, massimo €2.</small></span></label>
           </section>
         </div>
-        <section class="responsible"><strong>Il filtro riduce le giocate, non garantisce profitti.</strong><p>Valuta il metodo solo dopo almeno 30 giocate chiuse e usando anche il CLV. Non rincorrere le perdite. Vietato ai minori di 18 anni.</p></section>
+        <section class="responsible"><strong>La V16 deve poter dire PASSA.</strong><p>Il risultato va valutato sull’archivio reale, non su una singola giornata. Non aumentare la puntata per recuperare una perdita.</p></section>
       </section>
     </main>
 
@@ -100,7 +100,7 @@
     </nav>
   </div>
   <script src="./app.js" defer></script>
-  <script src="./v15-consensus.js" defer></script>
+  <script src="./v16-personal-edge.js" defer></script>
   <script src="./v15-ui-fix.js" defer></script>
 </body>
 </html>
