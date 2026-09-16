@@ -1,7 +1,7 @@
 {
-  "name": "Football Bet Analyzer V16.1",
+  "name": "Football Bet Analyzer V16.2",
   "short_name": "Football",
-  "description": "Analizzatore calcistico personale: tutte le partite del prossimo turno, caricamento Europa robusto e selettore singola separato",
+  "description": "Analizzatore calcistico personale: tutte le partite del prossimo turno, Coppe UEFA con fallback ufficiale e selettore singola separato",
   "id": "./",
   "start_url": "./",
   "scope": "./",
