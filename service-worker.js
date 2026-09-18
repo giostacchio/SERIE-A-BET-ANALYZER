@@ -1,12 +1,16 @@
-const CACHE = "football-analyzer-v16-5-20260917c";
+const CACHE = "football-analyzer-v16-6-20260918a";
 const CORE = [
-  "./", "./index.html", "./styles.css", "./app.js", "./v16-personal-edge.js", "./v15-ui-fix.js", "./v164-uefa-loader.js", "./v163-euro-fix.js", "./v165-nav-fix.js", "./manifest.webmanifest",
+  "./", "./index.html", "./styles.css", "./app.js", "./v164-uefa-loader.js", "./v166-stable.js", "./manifest.webmanifest",
   "./icon-192.png", "./icon-512.png", "./icon-maskable-192.png",
   "./icon-maskable-512.png", "./apple-touch-icon.png", "./favicon.ico"
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    caches.open(CACHE)
+      .then((cache) => cache.addAll(CORE))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -22,24 +26,23 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
-          return response;
-        })
-        .catch(() => caches.match(request).then((hit) => hit || caches.match("./index.html")))
-    );
-    return;
-  }
+
+  // V16.6: network-first for all app assets to avoid mixing old and new hotfix files.
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const fresh = fetch(request).then((response) => {
-        if (response.ok) caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
+    fetch(request)
+      .then((response) => {
+        if (response && response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, copy));
+        }
         return response;
-      });
-      return cached || fresh;
-    })
+      })
+      .catch(() =>
+        caches.match(request).then((hit) => {
+          if (hit) return hit;
+          if (request.mode === "navigate") return caches.match("./index.html");
+          return Promise.reject(new Error("offline"));
+        })
+      )
   );
 });
