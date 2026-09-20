@@ -327,11 +327,8 @@
     sync(special ? special.dataset.euroLeague : current);
   }, true);
 
-  const observer = new MutationObserver(patchLabels);
   addEventListener('load', () => {
     restoreUi();
     patchLabels();
-    const grid = document.getElementById('matchGrid');
-    if (grid) observer.observe(grid, {childList:true,subtree:true});
   });
 })();
